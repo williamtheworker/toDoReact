@@ -14,7 +14,13 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import TextField from '@mui/material/TextField';
+import Grid from '@mui/material/Grid';
+
+// MUI Icons
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 // External
 import {cloneDeep} from 'lodash';
@@ -32,10 +38,13 @@ const Tasks = () => {
     const [ tasks, setTasks ] = useState(tasksList.tasks);
 
     const [ dialog, setDialog ] = useState(false);
+    const [ addDialog, setAddDialog ] = useState(false);
+    const [ addTitle, setAddTitle ] = useState('');
+    const [ addDetails, setAddDetails ] = useState('');
     const [ deleteDialog, setDeleteDialog ] = useState(false);
     const [ selectedTitle, setSelectedTitle ] = useState('');
     const [ selectedStatus, setSelectedStatus ] = useState('');
-
+    
     // this is for setting the 'selectedTitle' and 'selectedStatus' to default;
     const clearSelected = () => {
         setSelectedTitle('');
@@ -55,6 +64,21 @@ const Tasks = () => {
         setTasks(tasksClone);
     }
 
+    const addToList = () => {
+        // code for adding new object to the 'task' array
+        let tasksClone = cloneDeep(tasks);
+
+        tasksClone.push(
+            {
+                title: addTitle,
+                details: addDetails,
+                status: 'pending'
+            }
+        );
+
+        setTasks(tasksClone);
+    }
+
     const removeItemFromList = (title) => {
         // code is used for removing an object from the 'task' array by key
         let arr = tasks.filter( obj => obj.title !== title);
@@ -69,14 +93,16 @@ const Tasks = () => {
             <ListItem
                 key={Math.random()}
                 secondaryAction={
-                <IconButton edge="end" aria-label="comments" onClick={
-                    () => {
-                        setDeleteDialog(true);
-                        setSelectedTitle(title);
-                    }
-                }>
-                    <DeleteIcon />
-                </IconButton>
+                    <Tooltip title={"Remove Task"}>
+                        <IconButton edge="end" aria-label="comments" onClick={
+                            () => {
+                                setDeleteDialog(true);
+                                setSelectedTitle(title);
+                            }
+                        }>
+                            <DeleteIcon />
+                        </IconButton>
+                    </Tooltip>
                 }
                 disablePadding
                 divider={true}
@@ -110,6 +136,7 @@ const Tasks = () => {
                 <Paper>
                     <Box
                         pt={1}
+                        pb={1}
                         display="flex"
                         justifyContent="center"
                         alignItems="center"
@@ -119,14 +146,22 @@ const Tasks = () => {
                         }}
                     >
                         <Typography 
-                            variant="h4" 
-                            gutterBottom
+                            variant="h4"
                             sx={{
                                 fontWeight: 'bold'
                             }}
                         >
                             My Tasks
                         </Typography>
+                        <Tooltip title="Add Task">
+                            <IconButton onClick={
+                                () => {
+                                    setAddDialog(true);
+                                }
+                            }>
+                                <AddCircleIcon/>
+                            </IconButton>
+                        </Tooltip>
                     </Box>
                     <Box p={2}>
                         <Divider>
@@ -169,6 +204,7 @@ const Tasks = () => {
                         </List>
                     </Box>
                 </Paper>
+
                 {/* Dialog Box for Moving from 'Ongoing' to 'Done' */}
                 <CustomDialogBox
                     open={dialog}
@@ -210,10 +246,73 @@ const Tasks = () => {
                     }
                 />
 
+                {/* Dialog Box for Adding Tasks */}
+                <CustomDialogBox
+                    open={addDialog}
+                    onClose={() => setAddDialog(false)}
+                    content={
+                        <Box p={2}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12}>
+                                    <TextField 
+                                        id="Title-outlined-basic"
+                                        label="Title"
+                                        variant="outlined"
+                                        onChange={(e) => {
+                                            setAddTitle(e.target.value);
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <TextField 
+                                        id="Details-outlined-basic"
+                                        label="Details"
+                                        variant="outlined"
+                                        fullWidth
+                                        onChange={(e) => {
+                                            setAddDetails(e.target.value);
+                                        }}
+                                    />
+                                </Grid>
+                            </Grid>
+                        </Box>
+                    }
+                    actions={
+                        <Box>
+                            <Button
+                                variant="contained"
+                                color="success"
+                                sx={{
+                                    marginRight: '5px'
+                                }}
+                                onClick={
+                                    () => {
+                                        addToList()
+                                        setAddDialog(false)
+                                    }
+                                }
+                            >
+                                Add
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="error"
+                                onClick={
+                                    () => {
+                                        setAddDialog(false)
+                                    }
+                                }
+                            >
+                                Cancel
+                            </Button>
+                        </Box>
+                    }
+                />
+
                 {/* Dialog Box for Removing from the list */}
                 <CustomDialogBox
                     open={deleteDialog}
-                    onClose={() => setDialog(false)}
+                    onClose={() => setDeleteDialog(false)}
                     content={
                         "Remove the task '" + selectedTitle + "'?"
                     }
